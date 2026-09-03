@@ -1,0 +1,49 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4 mb-5">
+  <div class="col-12 px-lg-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold m-0">My Listings</h2>
+      <a href="/listings/new" class="btn btn-dark rounded-pill px-4">Create New</a>
+    </div>
+    
+    <% if (listings.length === 0) { %>
+      <p class="text-muted">You haven't listed any properties yet.</p>
+    <% } else { %>
+      <div class="table-responsive bg-white border rounded-4">
+        <table class="table table-hover align-middle m-0">
+          <thead class="table-light">
+            <tr>
+              <th>Listing</th>
+              <th>Location</th>
+              <th>Price/Night</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(let listing of listings) { %>
+              <tr>
+                <td>
+                  <a href="/listings/<%= listing._id %>" class="text-dark fw-semibold text-decoration-none d-flex align-items-center gap-3">
+                    <img src="<%= listing.images && listing.images.length ? listing.images[0].url : 'https://images.unsplash.com/photo-1501785888041-af3ef285b470' %>" class="rounded-3 object-fit-cover" style="width: 50px; height: 50px;">
+                    <%= listing.title %>
+                  </a>
+                </td>
+                <td class="text-muted"><%= listing.location %></td>
+                <td>&#8377;<%= (listing.price || 0).toLocaleString("en-IN") %></td>
+                <td class="text-end">
+                  <a href="/listings/<%= listing._id %>/edit" class="btn btn-sm btn-outline-dark rounded-pill">Edit</a>
+                  <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
+                    <button class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+    
+  </div>
+</div>

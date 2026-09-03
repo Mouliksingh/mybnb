@@ -1,0 +1,32 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4 mb-5">
+  <div class="col-12 px-lg-4">
+    <h2 class="fw-bold mb-4">Your Wishlist</h2>
+    
+    <% if (listings.length === 0) { %>
+      <div class="text-center py-5">
+        <h4 class="fw-bold">Nothing saved yet</h4>
+        <p class="text-muted">As you search, click the heart icon to save your favorite places and Experiences to a wishlist.</p>
+        <a href="/listings" class="btn btn-outline-dark rounded-pill px-4 mt-2">Start exploring</a>
+      </div>
+    <% } else { %>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <% for(let listing of listings) { %>
+          <div class="col">
+            <a href="/listings/<%= listing._id %>" class="text-decoration-none text-dark">
+              <div class="card border-0">
+                <img src="<%= listing.images && listing.images.length ? listing.images[0].url : 'https://images.unsplash.com/photo-1501785888041-af3ef285b470' %>" class="rounded-4 w-100 object-fit-cover" style="height: 250px;" alt="...">
+                <div class="card-body px-0 pt-2 pb-0">
+                  <h6 class="fw-bold mb-0 text-truncate"><%= listing.location %>, <%= listing.country %></h6>
+                  <p class="text-muted small mb-1"><%= listing.title %></p>
+                  <p class="mb-0"><span class="fw-bold">&#8377;<%= (listing.price || 0).toLocaleString("en-IN") %></span> night</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>

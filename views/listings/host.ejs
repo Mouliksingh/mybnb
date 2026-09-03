@@ -1,0 +1,138 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  .host-hero {
+    padding: 4.5rem 0 3rem 0;
+  }
+  .host-card {
+    border-radius: 20px;
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .host-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08) !important;
+  }
+  .gradient-btn {
+    background: linear-gradient(135deg, #fe424d 0%, #d70466 100%);
+    color: white !important;
+    border: none;
+    border-radius: 14px;
+    padding: 0.9rem 2.2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 4px 15px rgba(254, 66, 77, 0.4);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .gradient-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(254, 66, 77, 0.55);
+    color: white;
+  }
+  .step-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #ffebee;
+    color: #fe424d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .stat-badge {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+</style>
+
+<div class="container">
+  <!-- Hero Section -->
+  <div class="row align-items-center host-hero">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+      <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold mb-3">Host with MyBnB</span>
+      <h1 class="display-4 fw-bold lh-tight mb-3">MyBnB it easily with complete peace of mind.</h1>
+      <p class="lead text-muted mb-4">
+        Turn your spare room, apartment, or vacation villa into steady earnings. Join thousands of hosts sharing their space across India and worldwide.
+      </p>
+      
+      <div class="d-flex align-items-center gap-3">
+        <a href="/listings/new" class="gradient-btn">
+          <span>Get Started</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Earnings Calculator Mockup -->
+    <div class="col-lg-5 offset-lg-1">
+      <div class="stat-badge shadow-sm">
+        <h5 class="fw-bold mb-1">Estimated Earnings</h5>
+        <p class="text-muted small mb-3">Based on a 7-night booking per month in popular travel hubs</p>
+        
+        <div class="d-flex align-items-baseline gap-2 mb-2">
+          <h2 class="fw-bold text-dark mb-0">&#8377; 48,000</h2>
+          <span class="text-muted">/ month</span>
+        </div>
+        
+        <div class="progress my-3" style="height: 8px;">
+          <div class="progress-bar bg-danger" role="progressbar" style="width: 75%"></div>
+        </div>
+        
+        <div class="d-flex justify-content-between text-muted small">
+          <span>1 night: avg &#8377; 3,500</span>
+          <span>15+ nights avg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-5 opacity-25" />
+
+  <!-- 3 Simple Steps -->
+  <div class="text-center mb-5">
+    <h2 class="fw-bold">List your place in 3 simple steps</h2>
+    <p class="text-muted">Simple setup, real-time geocoded location, and instant reservations.</p>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card host-card h-100 p-4 shadow-sm">
+        <div class="step-circle">1</div>
+        <h5 class="fw-bold mb-2">Describe your place</h5>
+        <p class="text-muted mb-0">Share your address, category, room highlights, and upload high-resolution photos of your property.</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card host-card h-100 p-4 shadow-sm">
+        <div class="step-circle">2</div>
+        <h5 class="fw-bold mb-2">Set pricing & location</h5>
+        <p class="text-muted mb-0">Our built-in map engine automatically detects and pins your city on live OpenStreetMap & Mapbox grids.</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card host-card h-100 p-4 shadow-sm">
+        <div class="step-circle">3</div>
+        <h5 class="fw-bold mb-2">Publish & start hosting</h5>
+        <p class="text-muted mb-0">Your listing instantly goes live across search feeds with automated 18% GST calculation support.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA Banner -->
+  <div class="p-5 rounded-4 text-center my-5" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white;">
+    <h2 class="fw-bold mb-2">Ready to MyBnB your space?</h2>
+    <p class="text-secondary mb-4">Set up your listing today and reach travelers from everywhere.</p>
+    <a href="/listings/new" class="btn btn-danger px-4 py-2 rounded-pill fw-bold">Create Listing Now</a>
+  </div>
+</div>

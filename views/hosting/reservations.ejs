@@ -1,0 +1,45 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-4 mb-5" style="max-width: 900px;">
+  <h2 class="fw-bold mb-4">Hosting Reservations</h2>
+  
+  <% if (reservations && reservations.length > 0) { %>
+    <div class="row row-cols-1 g-4">
+      <% reservations.forEach(reservation => { %>
+        <div class="col">
+          <div class="card border rounded-4 shadow-sm overflow-hidden p-3 bg-white">
+            <div class="row g-0 align-items-center">
+              <div class="col-md-4">
+                <img src="<%= (reservation.listing && reservation.listing.image && reservation.listing.image.url) ? reservation.listing.image.url : 'https://images.unsplash.com/photo-1566073771259-6a8506099945' %>" class="img-fluid rounded-3 w-100" style="height: 180px; object-fit: cover;" alt="Listing Image">
+              </div>
+              <div class="col-md-8">
+                <div class="card-body py-2">
+                  <h5 class="fw-bold text-dark mb-1"><%= reservation.listing ? reservation.listing.title : 'Listing' %></h5>
+                  <p class="text-muted small mb-2">
+                    <i class="fa-solid fa-user me-1 text-danger"></i> Booked by: <b>@<%= reservation.user ? reservation.user.username : 'Guest' %></b>
+                  </p>
+                  <hr class="my-2">
+                  <div class="d-flex justify-content-between small text-secondary mb-1">
+                    <span><b>Check-in:</b> <%= new Date(reservation.checkIn).toDateString() %></span>
+                    <span><b>Check-out:</b> <%= new Date(reservation.checkOut).toDateString() %></span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="fw-bold text-dark fs-5">&#8377;<%= reservation.totalPrice.toLocaleString("en-IN") %></span>
+                    <span class="badge bg-success px-3 py-2 rounded-pill">Confirmed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5 border rounded-4 bg-light">
+      <i class="fa-solid fa-house-chimney-user fs-1 text-muted mb-3"></i>
+      <h5 class="fw-bold text-dark">No reservations yet</h5>
+      <p class="text-muted small">When guests book your properties, their incoming reservations will appear here.</p>
+      <a href="/listings/new" class="btn btn-dark rounded-pill px-4 mt-2">Add a New Listing</a>
+    </div>
+  <% } %>
+</div>

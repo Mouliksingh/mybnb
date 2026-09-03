@@ -1,0 +1,45 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-5 mb-5">
+  <!-- Profile Sidebar -->
+  <div class="col-12 col-md-4 col-lg-3 text-center mb-4">
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+      <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center mx-auto mb-3 fw-bold" style="width: 120px; height: 120px; font-size: 3rem;">
+        <%= profileUser.username.charAt(0).toUpperCase() %>
+      </div>
+      <h4 class="fw-bold">@<%= profileUser.username %></h4>
+      <p class="text-muted small"><i class="fa-solid fa-check text-success me-1"></i> Identity verified</p>
+      <hr>
+      <div class="text-start">
+        <p class="mb-1 fw-semibold"><i class="fa-solid fa-star me-2"></i> <%= userListings.length %> Listings</p>
+        <p class="mb-0 fw-semibold"><i class="fa-solid fa-clock me-2"></i> Joined <%= profileUser._id.getTimestamp().getFullYear() %></p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Public Listings Grid -->
+  <div class="col-12 col-md-8 col-lg-9">
+    <h3 class="fw-bold mb-4"><%= profileUser.username %>'s Listings</h3>
+    
+    <% if (userListings.length === 0) { %>
+      <p class="text-muted"><%= profileUser.username %> doesn't have any public listings yet.</p>
+    <% } else { %>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        <% for (let listing of userListings) { %>
+          <div class="col">
+            <a href="/listings/<%= listing._id %>" class="text-decoration-none text-dark">
+              <div class="card border-0 h-100">
+                <img src="<%= listing.images && listing.images.length ? listing.images[0].url : 'https://images.unsplash.com/photo-1501785888041-af3ef285b470' %>" class="rounded-4 w-100 object-fit-cover" style="height: 200px;" alt="<%= listing.title %>">
+                <div class="card-body px-0 pt-2 pb-0">
+                  <h6 class="fw-bold mb-0 text-truncate"><%= listing.location %>, <%= listing.country %></h6>
+                  <p class="text-muted small mb-1"><%= listing.title %></p>
+                  <p class="mb-0"><span class="fw-bold">&#8377;<%= (listing.price || 0).toLocaleString("en-IN") %></span> night</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>

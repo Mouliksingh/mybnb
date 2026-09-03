@@ -1,0 +1,485 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  .star-rating-box {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    gap: 4px;
+  }
+  .star-rating-box input {
+    display: none;
+  }
+  .star-rating-box label {
+    font-size: 1.8rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.15s ease-in-out;
+  }
+  .star-rating-box input:checked ~ label,
+  .star-rating-box label:hover,
+  .star-rating-box label:hover ~ label {
+    color: #ff385c;
+  }
+
+  .carousel-main-img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 16px;
+  }
+  .carousel-thumb {
+    width: 75px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  .carousel-thumb.active, .carousel-thumb:hover {
+    opacity: 1;
+    border-color: #222;
+  }
+
+  /* Floating AI Concierge Widget Styles */
+  #aiConciergeWrapper {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1050;
+    font-family: inherit;
+  }
+  #aiChatBubbleBtn {
+    background-color: #ff385c;
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  #aiChatBubbleBtn:hover {
+    transform: scale(1.05);
+  }
+  #aiChatWindow {
+    display: none;
+    position: absolute;
+    bottom: 75px;
+    right: 0;
+    width: 350px;
+    max-width: 90vw;
+    height: 450px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: 1px solid #ebebeb;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #aiChatWindow.active {
+    display: flex;
+  }
+</style>
+
+<div 
+  id="listingDataStore" 
+  data-title="<%= listing.title %>" 
+  data-price="<%= listing.price || 0 %>"
+  data-coordinates="<%= JSON.stringify(listing.geometry ? listing.geometry.coordinates : [78.9629, 20.5937]) %>"
+  data-location="<%= listing.location %>"
+  data-country="<%= listing.country %>"
+  style="display: none;">
+</div>
+
+<div class="row mt-4 mb-5">
+  <div class="col-12 col-md-10 col-lg-8 mx-auto">
+    
+    <h2 class="fw-bold mb-1"><%= listing.title %></h2>
+    <p class="text-muted small mb-3">
+      <i class="fa-solid fa-location-dot me-1 text-danger"></i> <%= listing.location %>, <%= listing.country %>
+      • <span class="text-dark fw-semibold">Hosted by @<%= listing.owner ? listing.owner.username : "superhost" %></span>
+    </p>
+
+    <% if (listing.images && listing.images.length > 0) { %>
+      <div id="listingCarousel" class="carousel slide mb-3 shadow-sm rounded-4 overflow-hidden bg-black" data-bs-ride="carousel" data-bs-touch="true">
+        <div class="carousel-inner">
+          <% listing.images.forEach((img, index) => { %>
+            <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+              <img src="<%= img.url %>" class="d-block w-100 carousel-main-img" alt="Slide <%= index + 1 %>">
+            </div>
+          <% }) %>
+        </div>
+        <% if (listing.images.length > 1) { %>
+          <button class="carousel-control-prev" type="button" data-bs-target="#listingCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3 shadow" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#listingCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-dark rounded-circle p-3 shadow" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        <% } %>
+      </div>
+
+      <% if (listing.images.length > 1) { %>
+        <div class="d-flex gap-2 overflow-auto pb-2 mb-4 scrollbar-hidden">
+          <% listing.images.forEach((img, index) => { %>
+            <img src="<%= img.url %>" class="carousel-thumb <%= index === 0 ? 'active' : '' %>" data-bs-target="#listingCarousel" data-bs-slide-to="<%= index %>" alt="Thumbnail <%= index + 1 %>">
+          <% }) %>
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="mb-4">
+        <img src="<%= (listing.image && listing.image.url) ? listing.image.url : 'https://images.unsplash.com/photo-1501785888041-af3ef285b470' %>" class="w-100 rounded-4 carousel-main-img" alt="Placeholder">
+      </div>
+    <% } %>
+
+    <div class="mb-4">
+      <h4 class="fw-bold mb-2">About this place</h4>
+      <p class="text-secondary" style="line-height: 1.7; font-size: 15px;"><%= listing.description %></p>
+      
+      <div class="d-flex flex-wrap gap-2 mt-4">
+        <% if (currUser && listing.owner && !currUser._id.equals(listing.owner._id)) { %>
+          <a href="/messages/<%= listing.owner._id %>?listingId=<%= listing._id %>" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-semibold">
+            <i class="fa-regular fa-comments me-2"></i> Chat with Host
+          </a>
+        <% } %>
+
+        <% if (currUser && listing.owner && currUser._id.equals(listing.owner._id)) { %>
+          <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark rounded-pill px-4 py-2">Edit</a>
+          <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
+            <button class="btn btn-outline-danger rounded-pill px-4 py-2">Delete</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="mb-4">
+      <h4 class="fw-bold mb-1">Where you'll be</h4>
+      <p class="text-muted small mb-3"><%= listing.location %>, <%= listing.country %></p>
+      <div id="map-container" style="height: 380px; width: 100%; border-radius: 16px; border: 1px solid #ebebeb; z-index: 1;"></div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="mb-5">
+      <h4 class="fw-bold mb-3">Reviews & Ratings</h4>
+      
+      <% if (currUser) { %>
+        <div class="card p-4 border rounded-4 bg-light mb-4">
+          <form action="/listings/<%= listing._id %>/reviews" method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label class="form-label d-block text-muted small fw-bold">SELECT STAR RATING</label>
+              <div class="star-rating-box">
+                <input type="radio" id="star5" name="review[rating]" value="5" required />
+                <label for="star5"><i class="fa-solid fa-star"></i></label>
+                <input type="radio" id="star4" name="review[rating]" value="4" />
+                <label for="star4"><i class="fa-solid fa-star"></i></label>
+                <input type="radio" id="star3" name="review[rating]" value="3" />
+                <label for="star3"><i class="fa-solid fa-star"></i></label>
+                <input type="radio" id="star2" name="review[rating]" value="2" />
+                <label for="star2"><i class="fa-solid fa-star"></i></label>
+                <input type="radio" id="star1" name="review[rating]" value="1" />
+                <label for="star1"><i class="fa-solid fa-star"></i></label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <textarea name="review[comment]" rows="3" class="form-control rounded-3" placeholder="Share your experience..." required></textarea>
+            </div>
+            <button class="btn btn-dark rounded-pill px-4">Submit Review</button>
+          </form>
+        </div>
+      <% } %>
+
+      <% if (listing.reviews && listing.reviews.length > 0) { %>
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+          <% for(let review of listing.reviews) { %>
+            <div class="col">
+              <div class="p-3 border rounded-4 h-100 bg-white shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-bold text-dark">@<%= review.author ? review.author.username : 'Guest' %></span>
+                  <div class="text-danger small">
+                    <% for(let i=0; i<review.rating; i++) { %><i class="fa-solid fa-star"></i><% } %>
+                  </div>
+                </div>
+                <p class="text-secondary small mb-2"><%= review.comment %></p>
+                <% if (currUser && review.author && currUser._id.equals(review.author._id)) { %>
+                  <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                    <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">Delete</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } else { %>
+        <p class="text-muted small">No reviews yet.</p>
+      <% } %>
+    </div>
+
+    <hr class="my-5" />
+
+    <div class="card border rounded-4 p-4 shadow-sm bg-white mb-5" id="reserveSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+        <div>
+          <span class="fs-3 fw-bold text-dark">&#8377;<%= (listing.price || 0).toLocaleString("en-IN") %></span>
+          <span class="text-muted"> / night</span>
+        </div>
+      </div>
+
+      <form action="/bookings" method="POST">
+        <input type="hidden" name="listingId" value="<%= listing._id %>" />
+        
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label text-muted small fw-bold">CHECK-IN</label>
+            <input type="date" name="checkIn" id="checkInDate" class="form-control rounded-3 py-2 border" required />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label text-muted small fw-bold">CHECK-OUT</label>
+            <input type="date" name="checkOut" id="checkOutDate" class="form-control rounded-3 py-2 border" required />
+          </div>
+        </div>
+
+        <div id="priceCalculationCard" class="bg-light p-3 rounded-3 mb-3 d-none">
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>&#8377;<%= (listing.price || 0).toLocaleString("en-IN") %> &times; <span id="calcNights">1</span> night(s)</span>
+            <span>&#8377;<span id="calcSubtotal">0</span></span>
+          </div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>GST (18%)</span>
+            <span>&#8377;<span id="calcTax">0</span></span>
+          </div>
+          <hr class="my-2" />
+          <div class="d-flex justify-content-between fw-bold text-dark">
+            <span>Total Amount</span>
+            <span>&#8377;<span id="calcTotal">0</span></span>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-danger w-100 py-3 rounded-3 fw-bold fs-6" style="background-color: #ff385c; border: none;">Confirm & Reserve</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Floating AI Concierge Widget Markup -->
+<div id="aiConciergeWrapper">
+  <div id="aiChatWindow">
+    <div class="bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-robot text-danger bg-white p-2 rounded-circle"></i>
+        <div>
+          <h6 class="mb-0 fw-bold fs-6">AI Concierge</h6>
+          <small class="text-white-50" style="font-size: 0.7rem;">Grounded in listing data</small>
+        </div>
+      </div>
+      <button type="button" id="aiCloseBtn" class="btn-close btn-close-white shadow-none"></button>
+    </div>
+
+    <div id="conciergeChatBox" class="p-3 bg-light overflow-auto flex-grow-1" style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="p-2 rounded-3 bg-white border text-secondary small shadow-sm" style="max-width: 85%;">
+        Hi! I'm your virtual assistant for <strong><%= listing.title %></strong>. Ask me anything about this place!
+      </div>
+    </div>
+
+    <div class="p-3 bg-white border-top d-flex gap-2">
+      <input type="text" id="conciergeInput" class="form-control rounded-pill px-3 py-2 border small" placeholder="Ask a question..." autocomplete="off">
+      <button type="button" id="conciergeSendBtn" class="btn btn-danger rounded-pill px-3 fw-bold small" style="background-color: #ff385c; border: none;"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <button type="button" id="aiChatBubbleBtn" title="Ask AI Concierge">
+    <i class="fa-solid fa-robot fs-4"></i>
+  </button>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const carouselElement = document.getElementById('listingCarousel');
+    if (carouselElement) {
+      carouselElement.addEventListener('slide.bs.carousel', function (event) {
+        const thumbs = document.querySelectorAll('.carousel-thumb');
+        thumbs.forEach(t => t.classList.remove('active'));
+        if (thumbs[event.to]) {
+          thumbs[event.to].classList.add('active');
+          thumbs[event.to].scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+        }
+      });
+    }
+
+    const store = document.getElementById("listingDataStore");
+    const listingTitle = store.getAttribute("data-title");
+    const basePrice = Number(store.getAttribute("data-price"));
+    
+    const coordsStr = store.getAttribute("data-coordinates");
+    const rawLoc = store.getAttribute("data-location") || "";
+    const rawCountry = store.getAttribute("data-country") || "India";
+    
+    let lng = 78.9629, lat = 20.5937;
+    let isDefault = true;
+    
+    if (coordsStr) { 
+      try { 
+        const parsedCoords = JSON.parse(coordsStr); 
+        if (parsedCoords.length === 2) { 
+          lng = parsedCoords[0]; 
+          lat = parsedCoords[1]; 
+          if (lng !== 78.9629 && lat !== 20.5937) {
+            isDefault = false;
+          }
+        } 
+      } catch (e) {
+        console.error("Coordinates parsing failed", e);
+      } 
+    }
+
+    const map = L.map('map-container').setView([lat, lng], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+    
+    function setPin(latitude, longitude) {
+      map.setView([latitude, longitude], 13);
+      const customPin = L.divIcon({ 
+        className: 'custom-map-pin', 
+        html: `<div style="background:#ff385c; color:#fff; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.3);"><i class="fa-solid fa-house fs-5"></i></div>`, 
+        iconSize: [44, 44], 
+        iconAnchor: [22, 22] 
+      });
+      L.marker([latitude, longitude], { icon: customPin }).addTo(map).bindPopup(`<b>${listingTitle}</b>`).openPopup();
+      setTimeout(() => { map.invalidateSize(); }, 100);
+    }
+
+    if (!isDefault) {
+      setPin(lat, lng);
+    } else {
+      const cleanLocation = rawLoc.replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+      const cleanCountry = rawCountry.replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+      const query = `${cleanLocation}, ${cleanCountry}`;
+
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=en&q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            setPin(parseFloat(data[0].lat), parseFloat(data[0].lon));
+          } else {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=en&q=${encodeURIComponent(cleanCountry)}`)
+              .then(r => r.json())
+              .then(fallback => {
+                if (fallback && fallback.length > 0) {
+                  setPin(parseFloat(fallback[0].lat), parseFloat(fallback[0].lon));
+                }
+              });
+          }
+        }).catch(err => console.error("Map Error:", err));
+    }
+
+    const checkInInput = document.getElementById("checkInDate");
+    const checkOutInput = document.getElementById("checkOutDate");
+    const priceCard = document.getElementById("priceCalculationCard");
+    
+    if (checkInInput && checkOutInput) {
+      checkInInput.min = new Date().toISOString().split("T")[0];
+      
+      function recalculatePrice() {
+        if (checkInInput.value && checkOutInput.value) {
+          const start = new Date(checkInInput.value);
+          const end = new Date(checkOutInput.value);
+          
+          if (end > start) {
+            const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            const subtotal = basePrice * nights;
+            const tax = Math.round(subtotal * 0.18);
+            
+            document.getElementById("calcNights").textContent = nights;
+            document.getElementById("calcSubtotal").textContent = subtotal.toLocaleString("en-IN");
+            document.getElementById("calcTax").textContent = tax.toLocaleString("en-IN");
+            document.getElementById("calcTotal").textContent = (subtotal + tax).toLocaleString("en-IN");
+            
+            priceCard.classList.remove("d-none");
+          } else { 
+            priceCard.classList.add("d-none"); 
+          }
+        }
+      }
+      
+      checkInInput.addEventListener("change", () => { 
+        checkOutInput.min = checkInInput.value; 
+        recalculatePrice(); 
+      });
+      checkOutInput.addEventListener("change", recalculatePrice);
+    }
+
+    const bubbleBtn = document.getElementById("aiChatBubbleBtn");
+    const chatWindow = document.getElementById("aiChatWindow");
+    const closeBtn = document.getElementById("aiCloseBtn");
+    const chatBox = document.getElementById("conciergeChatBox");
+    const inputField = document.getElementById("conciergeInput");
+    const sendBtn = document.getElementById("conciergeSendBtn");
+    const listingId = "<%= listing._id %>";
+
+    bubbleBtn.addEventListener("click", () => {
+      chatWindow.classList.toggle("active");
+      if (chatWindow.classList.contains("active")) {
+        inputField.focus();
+      }
+    });
+
+    closeBtn.addEventListener("click", () => {
+      chatWindow.classList.remove("active");
+    });
+
+    async function sendQuery() {
+      const text = inputField.value.trim();
+      if (!text) return;
+
+      chatBox.innerHTML += `<div class="p-2 rounded-3 bg-danger text-white ms-auto small shadow-sm" style="max-width: 85%;">${text}</div>`;
+      inputField.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      const loaderId = "loader_" + Date.now();
+      chatBox.innerHTML += `<div id="${loaderId}" class="p-2 rounded-3 bg-white border text-muted small shadow-sm" style="max-width: 85%;">Thinking...</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch(`/listings/${listingId}/ask`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        
+        document.getElementById(loaderId).remove();
+
+        const reply = data.reply || data.error || "Sorry, I couldn't fetch a response.";
+        chatBox.innerHTML += `<div class="p-2 rounded-3 bg-white border text-dark small shadow-sm" style="max-width: 85%;"><b>Concierge:</b> ${reply}</div>`;
+      } catch (err) {
+        document.getElementById(loaderId).remove();
+        chatBox.innerHTML += `<div class="p-2 rounded-3 bg-white border text-danger small shadow-sm" style="max-width: 85%;">Network error. Try again.</div>`;
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    if (sendBtn && inputField) {
+      sendBtn.addEventListener("click", sendQuery);
+      inputField.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendQuery();
+      });
+    }
+  });
+</script>

@@ -1,0 +1,70 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4">
+  <div class="col-md-8 offset-md-2">
+    
+    <!-- Top Header -->
+    <div class="card p-3 shadow-sm border-0 rounded-4 mb-3 bg-white d-flex flex-row align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div>
+          <h5 class="fw-bold mb-0">
+            <%= listing.owner._id.equals(currUser._id) ? "Guest Conversation" : `Host: ${listing.owner.username}` %>
+          </h5>
+          <small class="text-muted"><%= listing.title %> &middot; <%= listing.location %></small>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/listings/inbox" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Inbox</a>
+        <a href="/listings/<%= listing._id %>" class="btn btn-outline-dark btn-sm rounded-pill px-3">Listing Details</a>
+      </div>
+    </div>
+
+    <!-- Message History Bubble Box -->
+    <div class="card p-4 shadow-sm border-0 rounded-4 bg-light mb-3" style="height: 420px; overflow-y: auto;">
+      <% if (messages.length === 0) { %>
+        <div class="text-center my-auto text-muted">
+          <i class="fa-regular fa-comments fs-1 mb-2 text-danger"></i>
+          <p class="mb-0">No messages yet. Send a message to get the conversation started.</p>
+        </div>
+      <% } %>
+
+      <% for(let msg of messages) { %>
+        <% let isMe = msg.sender && msg.sender._id.equals(currUser._id); %>
+        <div class="d-flex flex-column <%= isMe ? 'align-items-end' : 'align-items-start' %> mb-3">
+          <div class="p-3 rounded-4 <%= isMe ? 'bg-danger text-white' : 'bg-white text-dark shadow-sm border' %>" style="max-width: 75%;">
+            <p class="mb-1 small fw-bold <%= isMe ? 'text-white-50' : 'text-muted' %>">
+              <%= isMe ? 'You' : `@${msg.sender ? msg.sender.username : 'User'}` %>
+            </p>
+            <p class="mb-0" style="white-space: pre-wrap;"><%= msg.text %></p>
+          </div>
+          <small class="text-muted mt-1 px-1" style="font-size: 0.72rem;">
+            <%= new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+          </small>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Message Input Bar -->
+    <form action="/listings/<%= listing._id %>/contact" method="POST" class="d-flex gap-2">
+      <!-- Hidden field so the host reply routes back to the specific guest -->
+      <% if (activeChatUser) { %>
+        <input type="hidden" name="receiverId" value="<%= activeChatUser %>" />
+      <% } %>
+      <input 
+        type="text" 
+        name="text" 
+        class="form-control rounded-pill px-4 py-2 shadow-sm" 
+        placeholder="Type your message..." 
+        autocomplete="off"
+        required 
+      />
+      <button class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #fe424d, #e00b41);">
+        <i class="fa-solid fa-paper-plane me-1"></i> Send
+      </button>
+    </form>
+
+  </div>
+</div>

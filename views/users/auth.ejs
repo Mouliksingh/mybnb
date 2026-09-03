@@ -1,0 +1,438 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  .auth-page-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px;
+  }
+  .airbnb-card {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  .airbnb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .airbnb-body {
+    padding: 24px 30px 32px;
+  }
+  .brand-icon {
+    color: #ff385c;
+    font-size: 2.2rem;
+  }
+  .airbnb-field {
+    border: 1px solid #bbb;
+    border-radius: 10px;
+    padding: 13px 15px;
+    font-size: 15px;
+    width: 100%;
+    outline: none;
+    transition: border 0.15s ease-in-out;
+  }
+  .airbnb-field:focus {
+    border-color: #222;
+  }
+  .primary-btn {
+    background: linear-gradient(135deg, #ff385c, #e00b41);
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+    transition: opacity 0.15s;
+  }
+  .primary-btn:hover {
+    opacity: 0.94;
+    color: #fff;
+  }
+  .social-option-btn {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 11px;
+    width: 100%;
+    background: #fff;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #222;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.1s ease;
+  }
+  .social-option-btn:hover {
+    background: #f7f7f7;
+    border-color: #222;
+    color: #222;
+  }
+  .simple-divider {
+    display: flex;
+    align-items: center;
+    margin: 18px 0;
+    color: #888;
+    font-size: 12px;
+  }
+  .simple-divider::before, .simple-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #eee;
+  }
+  .simple-divider span {
+    padding: 0 10px;
+  }
+  .digit-input {
+    width: 46px;
+    height: 52px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 1px solid #bbb;
+  }
+  .digit-input:focus {
+    border-color: #222;
+    outline: none;
+  }
+  .code-badge-banner {
+    background: #fdf2f4;
+    border: 1px dashed #ff385c;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+</style>
+
+<div class="auth-page-container">
+  <div class="airbnb-card">
+    
+    <div class="airbnb-header">
+      <a href="/listings" class="text-dark text-decoration-none">
+        <i class="fa-solid fa-xmark fs-5"></i>
+      </a>
+      <span class="fw-semibold text-dark small" id="barTitle">Log in or sign up</span>
+      <div style="width: 18px;"></div>
+    </div>
+
+    <div class="airbnb-body">
+      <div class="text-center mb-3">
+        <i class="fa-brands fa-airbnb brand-icon"></i>
+      </div>
+
+      <h4 class="fw-bold text-center mb-4 text-dark" id="mainTitle">Welcome to MyBnB</h4>
+
+      <!-- Step 1: Identifier input -->
+      <div id="firstStep">
+        <div class="mb-3">
+          <input
+            type="text"
+            id="userIdentifier"
+            class="airbnb-field"
+            placeholder="Phone number or email"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div id="firstAlert" class="alert alert-danger py-2 small d-none text-center rounded-3 mb-3"></div>
+
+        <button id="sendCodeBtn" class="primary-btn mb-3">
+          Continue
+        </button>
+
+        <div class="simple-divider">
+          <span>or</span>
+        </div>
+
+        <!-- Working Google OAuth & Apple Redirect -->
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <a href="/auth/google" class="social-option-btn">
+              <i class="fa-brands fa-google text-danger fs-5 me-2"></i> Google
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="/auth/google" class="social-option-btn">
+              <i class="fa-brands fa-apple fs-5 me-2"></i> Apple
+            </a>
+          </div>
+        </div>
+
+        <button id="showPasswordFormBtn" class="social-option-btn w-100" type="button">
+          <i class="fa-solid fa-key me-2"></i> Continue with Password
+        </button>
+      </div>
+
+      <!-- Step 1 Alternative: Password login -->
+      <div id="passwordStep" class="d-none">
+        <form action="/login/password" method="POST" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <input type="text" name="username" class="airbnb-field" placeholder="Username" required />
+          </div>
+          <div class="mb-4">
+            <input type="password" name="password" class="airbnb-field" placeholder="Password" required />
+          </div>
+          <button type="submit" class="primary-btn mb-3">
+            Log in
+          </button>
+          <button type="button" id="backToFirstStepBtn" class="btn btn-link w-100 text-secondary text-decoration-none small">
+            &larr; Use phone or email OTP instead
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 2: 6-Digit OTP -->
+      <div id="otpStep" class="d-none">
+        <div id="codeBanner" class="code-badge-banner text-center">
+          <div class="text-muted small mb-1">Sent to <strong id="sentTarget" class="text-dark"></strong></div>
+          <div class="small text-dark">Verification Code: <strong id="liveCodePreview" class="fs-6 text-danger ms-1"></strong></div>
+        </div>
+
+        <div class="d-flex justify-content-between gap-1 mb-3">
+          <input type="text" maxlength="1" class="digit-input pin-box" inputmode="numeric" />
+          <input type="text" maxlength="1" class="digit-input pin-box" inputmode="numeric" />
+          <input type="text" maxlength="1" class="digit-input pin-box" inputmode="numeric" />
+          <input type="text" maxlength="1" class="digit-input pin-box" inputmode="numeric" />
+          <input type="text" maxlength="1" class="digit-input pin-box" inputmode="numeric" />
+          <input type="text" maxlength="1" class="digit-input pin-box" inputmode="numeric" />
+        </div>
+
+        <div id="otpAlert" class="alert alert-danger py-2 small d-none text-center rounded-3 mb-3"></div>
+
+        <button id="verifyBtn" class="primary-btn mb-3">
+          Verify & Continue
+        </button>
+
+        <div class="d-flex justify-content-between align-items-center small text-muted">
+          <button id="changeDetailsBtn" class="btn btn-link btn-sm text-secondary text-decoration-none p-0">Change details</button>
+          <div>
+            <span id="countdownBlock">Resend in <span id="secs" class="fw-bold text-dark">30</span>s</span>
+            <button id="resendBtn" class="btn btn-link btn-sm text-danger fw-bold text-decoration-none p-0 d-none">Resend code</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Complete Sign Up -->
+      <div id="profileStep" class="d-none">
+        <div class="alert alert-success py-2 small text-center rounded-3 mb-3">
+          <i class="fa-solid fa-check me-1"></i> Verified: <strong id="verifiedBadge"></strong>
+        </div>
+
+        <form action="/signup/complete" method="POST" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <input type="text" name="username" id="newUsername" class="airbnb-field" placeholder="Username" required />
+          </div>
+          <div id="emailFieldWrap" class="mb-3">
+            <input type="email" name="email" id="newEmail" class="airbnb-field" placeholder="Email" required />
+          </div>
+          <div id="phoneFieldWrap" class="mb-3">
+            <input type="tel" name="phone" id="newPhone" class="airbnb-field" placeholder="10-digit phone number" maxlength="10" />
+          </div>
+          <div class="mb-4">
+            <input type="password" name="password" id="newPassword" class="airbnb-field" placeholder="Create a password" required />
+          </div>
+          <button type="submit" class="primary-btn">
+            Agree and continue
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let timer = null;
+
+  const firstStep = document.getElementById("firstStep");
+  const passwordStep = document.getElementById("passwordStep");
+  const otpStep = document.getElementById("otpStep");
+  const profileStep = document.getElementById("profileStep");
+
+  const barTitle = document.getElementById("barTitle");
+  const mainTitle = document.getElementById("mainTitle");
+  const userIdentifier = document.getElementById("userIdentifier");
+  const firstAlert = document.getElementById("firstAlert");
+  const otpAlert = document.getElementById("otpAlert");
+  const sentTarget = document.getElementById("sentTarget");
+  const liveCodePreview = document.getElementById("liveCodePreview");
+  const verifiedBadge = document.getElementById("verifiedBadge");
+
+  const sendCodeBtn = document.getElementById("sendCodeBtn");
+  const showPasswordFormBtn = document.getElementById("showPasswordFormBtn");
+  const backToFirstStepBtn = document.getElementById("backToFirstStepBtn");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const resendBtn = document.getElementById("resendBtn");
+  const changeDetailsBtn = document.getElementById("changeDetailsBtn");
+
+  const newEmail = document.getElementById("newEmail");
+  const newPhone = document.getElementById("newPhone");
+  const pinBoxes = document.querySelectorAll(".pin-box");
+  const countdownBlock = document.getElementById("countdownBlock");
+  const secs = document.getElementById("secs");
+
+  showPasswordFormBtn.addEventListener("click", () => {
+    firstStep.classList.add("d-none");
+    passwordStep.classList.remove("d-none");
+    mainTitle.textContent = "Log in with password";
+  });
+
+  backToFirstStepBtn.addEventListener("click", () => {
+    passwordStep.classList.add("d-none");
+    firstStep.classList.remove("d-none");
+    mainTitle.textContent = "Welcome to MyBnB";
+  });
+
+  function startTimer() {
+    let count = 30;
+    countdownBlock.classList.remove("d-none");
+    resendBtn.classList.add("d-none");
+    secs.textContent = count;
+
+    clearInterval(timer);
+    timer = setInterval(() => {
+      count--;
+      secs.textContent = count;
+      if (count <= 0) {
+        clearInterval(timer);
+        countdownBlock.classList.add("d-none");
+        resendBtn.classList.remove("d-none");
+      }
+    }, 1000);
+  }
+
+  pinBoxes.forEach((box, i) => {
+    box.addEventListener("input", (e) => {
+      if (e.target.value.length === 1 && i < pinBoxes.length - 1) {
+        pinBoxes[i + 1].focus();
+      }
+    });
+    box.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !e.target.value && i > 0) {
+        pinBoxes[i - 1].focus();
+      }
+    });
+  });
+
+  sendCodeBtn.addEventListener("click", async () => {
+    const input = userIdentifier.value.trim();
+    firstAlert.classList.add("d-none");
+
+    if (!input) {
+      firstAlert.textContent = "Please enter your phone number or email.";
+      firstAlert.classList.remove("d-none");
+      return;
+    }
+
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = "Sending code...";
+
+    try {
+      const res = await fetch("/auth/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: input }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        sentTarget.textContent = data.targetValue;
+        liveCodePreview.textContent = data.previewOtp;
+        firstStep.classList.add("d-none");
+        otpStep.classList.remove("d-none");
+        barTitle.textContent = "Verify code";
+        mainTitle.textContent = "Confirm your identity";
+        pinBoxes[0].focus();
+        startTimer();
+      } else {
+        firstAlert.textContent = data.message;
+        firstAlert.classList.remove("d-none");
+      }
+    } catch (err) {
+      firstAlert.textContent = "Something went wrong sending the code.";
+      firstAlert.classList.remove("d-none");
+    } finally {
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.textContent = "Continue";
+    }
+  });
+
+  changeDetailsBtn.addEventListener("click", () => {
+    otpStep.classList.add("d-none");
+    firstStep.classList.remove("d-none");
+    barTitle.textContent = "Log in or sign up";
+    mainTitle.textContent = "Welcome to MyBnB";
+    userIdentifier.focus();
+  });
+
+  resendBtn.addEventListener("click", () => {
+    sendCodeBtn.click();
+  });
+
+  verifyBtn.addEventListener("click", async () => {
+    let pin = "";
+    pinBoxes.forEach((box) => (pin += box.value));
+    otpAlert.classList.add("d-none");
+
+    if (pin.length !== 6) {
+      otpAlert.textContent = "Please fill in all 6 digits.";
+      otpAlert.classList.remove("d-none");
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = "Verifying...";
+
+    try {
+      const res = await fetch("/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp: pin }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (data.action === "logged_in") {
+          window.location.href = data.redirectUrl || "/listings";
+        } else if (data.action === "proceed_signup") {
+          otpStep.classList.add("d-none");
+          profileStep.classList.remove("d-none");
+          barTitle.textContent = "Profile setup";
+          mainTitle.textContent = "Finish signing up";
+          verifiedBadge.textContent = data.targetValue;
+
+          if (data.channel === "email") {
+            newEmail.value = data.targetValue;
+            newEmail.readOnly = true;
+          } else {
+            newPhone.value = data.targetValue;
+            newPhone.readOnly = true;
+          }
+          document.getElementById("newUsername").focus();
+        }
+      } else {
+        otpAlert.textContent = data.message;
+        otpAlert.classList.remove("d-none");
+      }
+    } catch (err) {
+      otpAlert.textContent = "Error verifying code.";
+      otpAlert.classList.remove("d-none");
+    } finally {
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = "Verify & Continue";
+    }
+  });
+</script>

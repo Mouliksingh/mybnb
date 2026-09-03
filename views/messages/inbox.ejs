@@ -1,0 +1,29 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4 mb-5">
+  <div class="col-12 col-md-8 col-lg-6 mx-auto">
+    <h2 class="fw-bold mb-4">Your Messages</h2>
+
+    <% if (conversations && conversations.length > 0) { %>
+      <div class="list-group shadow-sm rounded-4 overflow-hidden border">
+        <% conversations.forEach(conv => { %>
+          <a href="/messages/<%= conv.partner._id %>" class="list-group-item list-group-item-action p-3 d-flex align-items-center justify-content-between">
+            <div>
+              <h5 class="mb-1 fw-bold text-dark">@<%= conv.partner.username %></h5>
+              <p class="mb-1 text-muted small text-truncate" style="max-width: 280px;"><%= conv.lastMessage %></p>
+            </div>
+            <small class="text-secondary" style="font-size: 0.75rem;">
+              <%= new Date(conv.createdAt).toLocaleDateString() %>
+            </small>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-5 bg-light rounded-4 border">
+        <i class="fa-regular fa-comments fs-1 text-muted mb-3"></i>
+        <p class="text-muted">No conversations yet. Reach out to a host from any listing page!</p>
+        <a href="/listings" class="btn btn-dark rounded-pill px-4 mt-2">Explore Listings</a>
+      </div>
+    <% } %>
+  </div>
+</div>

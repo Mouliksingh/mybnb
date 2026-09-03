@@ -1,0 +1,45 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-4 mb-5" style="max-width: 900px;">
+  <h2 class="fw-bold mb-4">Where you're going (Trips)</h2>
+  
+  <% if (bookings && bookings.length > 0) { %>
+    <div class="row row-cols-1 g-4">
+      <% bookings.forEach(booking => { %>
+        <div class="col">
+          <div class="card border rounded-4 shadow-sm overflow-hidden p-3 bg-white">
+            <div class="row g-0 align-items-center">
+              <div class="col-md-4">
+                <img src="<%= (booking.listing && booking.listing.image && booking.listing.image.url) ? booking.listing.image.url : 'https://images.unsplash.com/photo-1566073771259-6a8506099945' %>" class="img-fluid rounded-3 w-100" style="height: 180px; object-fit: cover;" alt="Listing Image">
+              </div>
+              <div class="col-md-8">
+                <div class="card-body py-2">
+                  <h5 class="fw-bold text-dark mb-1"><%= booking.listing ? booking.listing.title : 'Listing Unavailable' %></h5>
+                  <p class="text-muted small mb-2">
+                    <i class="fa-solid fa-location-dot me-1 text-danger"></i> <%= booking.listing ? booking.listing.location + ', ' + booking.listing.country : '' %>
+                  </p>
+                  <hr class="my-2">
+                  <div class="d-flex justify-content-between small text-secondary mb-1">
+                    <span><b>Check-in:</b> <%= new Date(booking.checkIn).toDateString() %></span>
+                    <span><b>Check-out:</b> <%= new Date(booking.checkOut).toDateString() %></span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="fw-bold text-dark fs-5">&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %></span>
+                    <a href="/listings/<%= booking.listing ? booking.listing._id : '' %>" class="btn btn-outline-dark rounded-pill px-4 btn-sm">View Listing</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5 border rounded-4 bg-light">
+      <i class="fa-solid fa-suitcase-rolling fs-1 text-muted mb-3"></i>
+      <h5 class="fw-bold text-dark">No trips booked yet</h5>
+      <p class="text-muted small">Time to dust off your bags and start planning your next adventure!</p>
+      <a href="/listings" class="btn btn-danger rounded-pill px-4 mt-2" style="background-color: #ff385c; border: none;">Start Exploring</a>
+    </div>
+  <% } %>
+</div>

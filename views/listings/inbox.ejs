@@ -1,0 +1,55 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container my-4" style="max-width: 960px;">
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold mb-0">Messages & Inquiries</h3>
+      <p class="text-secondary small mb-0">Direct communication with your guests</p>
+    </div>
+    <a href="/listings" class="btn btn-outline-secondary rounded-pill px-3">Back to Explore</a>
+  </div>
+
+  <% if (messages.length === 0) { %>
+    <div class="text-center py-5">
+      <i class="fa-regular fa-comment-dots fs-1 text-muted mb-3"></i>
+      <h5 class="fw-bold text-dark">No messages yet</h5>
+      <p class="text-muted small">When guests inquire about your stays or send questions, their chats will appear here.</p>
+    </div>
+  <% } else { %>
+    <div class="list-group shadow-sm rounded-4 border-0 overflow-hidden">
+      <% 
+        // Group unique conversations by listing and the other user
+        const seen = new Set();
+        const uniqueConvos = [];
+        for (let msg of messages) {
+          const otherUser = msg.sender._id.equals(currUser._id) ? msg.receiver : msg.sender;
+          if (!otherUser || !msg.listing) continue;
+          const key = `${msg.listing._id}_${otherUser._id}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueConvos.push({ msg, otherUser });
+          }
+        }
+      %>
+
+      <% for(let { msg, otherUser } of uniqueConvos) { %>
+        <a href="/listings/<%= msg.listing._id %>/contact?guestId=<%= otherUser._id %>" class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center border-bottom">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center fw-bold" style="width: 48px; height: 48px; font-size: 1.1rem;">
+              <%= otherUser.username.charAt(0).toUpperCase() %>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1 text-dark">@<%= otherUser.username %></h6>
+              <p class="text-muted small mb-0 text-truncate" style="max-width: 450px;"><%= msg.text %></p>
+              <small class="badge bg-light text-secondary border mt-1"><%= msg.listing.title %></small>
+            </div>
+          </div>
+          <div class="text-end">
+            <small class="text-muted d-block mb-2"><%= new Date(msg.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) %></small>
+            <span class="btn btn-sm btn-outline-danger rounded-pill px-3">Open Chat</span>
+          </div>
+        </a>
+      <% } %>
+    </div>
+  <% } %>
+</div>

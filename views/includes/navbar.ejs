@@ -1,0 +1,259 @@
+<style>
+  .search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .airbnb-search-bar {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 40px;
+    padding: 6px 10px 6px 18px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 260px;
+  }
+
+  .airbnb-search-bar:hover,
+  .airbnb-search-bar:focus-within {
+    width: 380px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    border-color: #c0c0c0;
+  }
+
+  .airbnb-search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #222;
+  }
+
+  .search-icon-btn {
+    background-color: #ff385c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  #filters {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 2rem !important;
+    overflow-x: auto !important;
+    padding: 0.9rem 0 0.5rem 0 !important;
+    scrollbar-width: none;
+    width: 100%;
+  }
+
+  #filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-item {
+    text-align: center;
+    min-width: 65px;
+    cursor: pointer;
+    color: #717171;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 8px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .filter-item i {
+    font-size: 1.3rem;
+  }
+
+  .filter-item span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .filter-item:hover, .filter-item.active {
+    color: #000;
+    border-color: #000;
+  }
+</style>
+
+<nav class="navbar navbar-expand-md bg-white border-bottom sticky-top py-2">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand text-danger fw-bold fs-4 d-flex align-items-center gap-1" href="/listings">
+      <i class="fa-solid fa-compass"></i>
+      <span>MyBnB</span>
+    </a>
+
+    <div class="search-container d-none d-md-flex mx-auto">
+      <form action="/listings" method="GET" class="airbnb-search-bar">
+        <input 
+          type="text" 
+          name="q" 
+          class="airbnb-search-input" 
+          value="<%= (typeof searchQuery !== 'undefined' ? searchQuery : '') %>" 
+          placeholder="Anywhere • Any week • Add guests" 
+          autocomplete="off"
+        />
+        <button type="submit" class="search-icon-btn" title="Search">
+          <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+        </button>
+      </form>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+      <a href="/listings/new" class="nav-link fw-semibold text-dark small d-none d-sm-block">Airbnb your home</a>
+      
+      <% if (currUser) { %>
+        <a href="/messages" class="btn btn-light rounded-circle p-2 text-dark shadow-sm" title="Inbox">
+          <i class="fa-regular fa-message"></i>
+        </a>
+      <% } %>
+
+      <button class="btn border rounded-pill px-3 py-2 d-flex align-items-center gap-2 shadow-sm bg-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu" aria-controls="sideMenu">
+        <i class="fa-solid fa-bars text-secondary"></i>
+        <i class="fa-solid fa-circle-user fs-5 text-secondary"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Expanded Side Sliding Offcanvas Drawer -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sideMenu" aria-labelledby="sideMenuLabel">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title fw-bold" id="sideMenuLabel">Navigation Menu</h5>
+    <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column justify-content-between py-4">
+    <ul class="navbar-nav gap-3 fs-6">
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/listings">
+          <i class="fa-solid fa-compass me-3 text-danger fs-5"></i> Explore Listings
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/listings/new">
+          <i class="fa-solid fa-house-chimney-user me-3 text-danger fs-5"></i> Airbnb your home
+        </a>
+      </li>
+      
+      <% if (currUser) { %>
+        <hr class="text-muted my-1">
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/bookings">
+            <i class="fa-solid fa-suitcase-rolling me-3 text-danger fs-5"></i> Trips & Bookings
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/hosting/reservations">
+            <i class="fa-solid fa-calendar-check me-3 text-danger fs-5"></i> Hosting Reservations
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/messages">
+            <i class="fa-regular fa-comments me-3 text-danger fs-5"></i> Message Inbox
+          </a>
+        </li>
+      <% } %>
+
+      <hr class="text-muted my-1">
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/listings?category=Beachfront">
+          <i class="fa-solid fa-umbrella-beach me-3 text-secondary fs-5"></i> Beachfront Getaways
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="/listings?category=Mansions">
+          <i class="fa-solid fa-chess-rook me-3 text-secondary fs-5"></i> Luxury Mansions
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-semibold d-flex align-items-center" href="https://support.google.com" target="_blank">
+          <i class="fa-solid fa-circle-question me-3 text-secondary fs-5"></i> Help Center
+        </a>
+      </li>
+    </ul>
+
+    <div>
+      <hr class="my-4">
+      <% if (currUser) { %>
+        <div class="mb-3 p-3 bg-light rounded-3 border">
+          <p class="mb-0 text-muted small">Signed in as</p>
+          <p class="mb-0 fw-bold text-dark text-truncate">@<%= currUser.username %></p>
+        </div>
+        <form action="/logout" method="GET">
+          <button class="btn btn-dark w-100 py-2 rounded-pill fw-semibold shadow-sm">Log out</button>
+        </form>
+      <% } else { %>
+        <div class="d-flex flex-column gap-2">
+          <a href="/signup" class="btn btn-danger w-100 py-2 rounded-pill fw-semibold shadow-sm text-center text-decoration-none" style="background-color: #ff385c; border: none;">Sign up</a>
+          <a href="/login" class="btn btn-outline-dark w-100 py-2 rounded-pill fw-semibold text-center text-decoration-none">Log in</a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid px-4 bg-white border-bottom">
+  <div id="filters">
+    <% const currentCat = (typeof selectedCategory !== 'undefined' ? selectedCategory : ''); %>
+    <a href="/listings" class="filter-item <%= (!currentCat) ? 'active' : '' %>">
+      <i class="fa-solid fa-fire"></i>
+      <span>Trending</span>
+    </a>
+    <a href="/listings?category=Beachfront" class="filter-item <%= (currentCat === 'Beachfront') ? 'active' : '' %>">
+      <i class="fa-solid fa-umbrella-beach"></i>
+      <span>Beachfront</span>
+    </a>
+    <a href="/listings?category=Cabins" class="filter-item <%= (currentCat === 'Cabins') ? 'active' : '' %>">
+      <i class="fa-solid fa-campground"></i>
+      <span>Cabins</span>
+    </a>
+    <a href="/listings?category=Mansions" class="filter-item <%= (currentCat === 'Mansions') ? 'active' : '' %>">
+      <i class="fa-solid fa-chess-rook"></i>
+      <span>Mansions</span>
+    </a>
+    <a href="/listings?category=Amazing Pools" class="filter-item <%= (currentCat === 'Amazing Pools') ? 'active' : '' %>">
+      <i class="fa-solid fa-person-swimming"></i>
+      <span>Pools</span>
+    </a>
+    <a href="/listings?category=Mountains" class="filter-item <%= (currentCat === 'Mountains') ? 'active' : '' %>">
+      <i class="fa-solid fa-mountain"></i>
+      <span>Mountains</span>
+    </a>
+    <a href="/listings?category=Farms" class="filter-item <%= (currentCat === 'Farms') ? 'active' : '' %>">
+      <i class="fa-solid fa-tractor"></i>
+      <span>Farms</span>
+    </a>
+    <a href="/listings?category=Lake" class="filter-item <%= (currentCat === 'Lake') ? 'active' : '' %>">
+      <i class="fa-solid fa-water"></i>
+      <span>Lakefront</span>
+    </a>
+    <a href="/listings?category=Iconic Cities" class="filter-item <%= (currentCat === 'Iconic Cities') ? 'active' : '' %>">
+      <i class="fa-solid fa-city"></i>
+      <span>Cities</span>
+    </a>
+    <a href="/listings?category=Arctic" class="filter-item <%= (currentCat === 'Arctic') ? 'active' : '' %>">
+      <i class="fa-solid fa-snowflake"></i>
+      <span>Arctic</span>
+    </a>
+  </div>
+</div>

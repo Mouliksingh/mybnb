@@ -1,0 +1,66 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4 mb-5">
+  <div class="col-8 offset-2">
+    <h3 class="fw-bold mb-4">Edit your Listing</h3>
+    
+    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" novalidate class="needs-validation" enctype="multipart/form-data">
+      
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input name="listing[title]" value="<%= listing.title %>" type="text" class="form-control rounded-3" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea name="listing[description]" class="form-control rounded-3" rows="4" required><%= listing.description %></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Upload New Images (Optional)</label>
+        <input name="listing[image]" type="file" class="form-control rounded-3" multiple />
+      </div>
+
+      <div class="row">
+        <div class="mb-3 col-md-4">
+          <label for="price" class="form-label">Price</label>
+          <input name="listing[price]" value="<%= listing.price %>" type="number" class="form-control rounded-3" required />
+        </div>
+
+        <div class="mb-3 col-md-8">
+          <label for="location" class="form-label">State / Region (India)</label>
+          <select name="listing[location]" id="location" class="form-select rounded-3" required>
+            <% 
+              const states = [
+                "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
+                "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", 
+                "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
+                "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
+                "Uttarakhand", "West Bengal", "Delhi", "Jammu and Kashmir", "Ladakh"
+              ];
+            %>
+            <% states.forEach(st => { %>
+              <option value="<%= st %>" <%= listing.location === st ? 'selected' : '' %>><%= st %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <input type="hidden" name="listing[country]" value="India">
+
+      <div class="mb-4">
+        <label for="category" class="form-label">Category</label>
+        <select name="listing[category]" class="form-select rounded-3" required>
+          <% 
+            const cats = ["Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic"];
+          %>
+          <% cats.forEach(cat => { %>
+            <option value="<%= cat %>" <%= listing.category === cat ? 'selected' : '' %>><%= cat %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <button class="btn btn-dark rounded-pill px-5 py-2 w-100 fw-bold" style="background-color: #ff385c; border: none;">Save Changes</button>
+    </form>
+  </div>
+</div>

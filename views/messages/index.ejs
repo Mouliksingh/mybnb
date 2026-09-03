@@ -1,0 +1,34 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-4 mb-5" style="max-width: 800px;">
+  <h2 class="fw-bold mb-4">Your Inbox</h2>
+  
+  <% if (conversations && conversations.length > 0) { %>
+    <div class="list-group shadow-sm rounded-4 overflow-hidden border">
+      <% conversations.forEach(conv => { %>
+        <a href="/messages/<%= conv.partner._id %><%= conv.listing ? '?listingId=' + conv.listing._id : '' %>" class="list-group-item list-group-item-action p-3 d-flex align-items-center gap-3 border-bottom text-decoration-none">
+          <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 50px; height: 50px; min-width: 50px;">
+            <%= conv.partner.username.charAt(0).toUpperCase() %>
+          </div>
+          <div class="flex-grow-1 overflow-hidden">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <h6 class="mb-0 fw-bold text-dark">@<%= conv.partner.username %></h6>
+              <small class="text-muted"><%= new Date(conv.lastMessage.createdAt).toLocaleDateString() %></small>
+            </div>
+            <% if (conv.listing) { %>
+              <p class="mb-1 text-danger small fw-semibold"><i class="fa-solid fa-house me-1"></i> <%= conv.listing.title %></p>
+            <% } %>
+            <p class="mb-0 text-secondary text-truncate small"><%= conv.lastMessage.content %></p>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5 border rounded-4 bg-light">
+      <i class="fa-regular fa-comments fs-1 text-muted mb-3"></i>
+      <h5 class="fw-bold text-dark">No messages yet</h5>
+      <p class="text-muted small">Start a conversation with a host from any listing page.</p>
+      <a href="/listings" class="btn btn-dark rounded-pill px-4 mt-2">Explore Listings</a>
+    </div>
+  <% } %>
+</div>

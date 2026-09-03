@@ -1,0 +1,149 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  #filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter {
+    text-align: center;
+    margin-right: 2rem;
+    margin-top: 2rem;
+    opacity: 0.7;
+  }
+  .filter:hover {
+    opacity: 1;
+    cursor: pointer;
+  }
+  .filter p {
+    font-size: 0.8rem;
+  }
+  .listing-link {
+    text-decoration: none;
+  }
+  
+  /* Modern Chat Bubble Styling */
+  .chat-bubble-user {
+    background-color: #ff385c;
+    color: white;
+    border-radius: 1rem 1rem 0 1rem;
+    padding: 0.75rem 1rem;
+    max-width: 85%;
+    margin-left: auto;
+    word-break: break-word;
+  }
+  .chat-bubble-ai {
+    background-color: #f1f3f5;
+    color: #212529;
+    border-radius: 1rem 1rem 1rem 0;
+    padding: 0.75rem 1rem;
+    max-width: 85%;
+    margin-right: auto;
+    word-break: break-word;
+    white-space: pre-line;
+  }
+</style>
+
+<!-- Listing Grid -->
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+  <% for(let listing of allListings) { %>
+    <a href="/listings/<%= listing._id %>" class="listing-link">
+      <div class="card col listing-card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <img 
+          src="<%= (listing.image && listing.image.url) ? listing.image.url : (typeof listing.image === 'string' ? listing.image : 'https://images.unsplash.com/photo-1566073771259-6a8506099945') %>" 
+          class="card-img-top object-fit-cover" 
+          alt="listing_image" 
+          style="height: 20rem;" 
+        />
+        <div class="card-body px-0 pt-3">
+          <p class="card-text text-dark mb-1">
+            <b><%= listing.title %></b><br>
+            <span class="text-muted"><%= listing.location %>, <%= listing.country %></span><br/>
+            <span class="fw-bold">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %></span> <span class="text-muted">night</span>
+          </p>
+        </div>
+      </div>
+    </a>
+  <% } %>
+</div>
+
+<!-- Global AI Recommender Widget -->
+<div id="global-chat-widget" class="position-fixed bottom-0 end-0 m-4" style="z-index: 1050;">
+  <button id="global-chat-toggle" class="btn btn-danger rounded-circle p-3 shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #ff385c; border: none;" title="Ask AI Concierge">
+    <i class="fa-solid fa-robot fs-4 text-white"></i>
+  </button>
+  
+  <div id="global-chat-window" class="card shadow-lg d-none mt-2 border-0 rounded-4 overflow-hidden" style="width: 360px; bottom: 75px; right: 0; position: absolute;">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+      <span class="fw-bold d-flex align-items-center gap-2"><i class="fa-solid fa-earth-americas text-danger"></i> Global AI Booking Agent</span>
+      <button id="global-chat-close" class="btn-close btn-close-white shadow-none"></button>
+    </div>
+    <div id="global-chat-history" class="card-body overflow-auto p-3" style="height: 320px; background: #ffffff;">
+      <div class="mb-3">
+        <div class="chat-bubble-ai shadow-sm small">
+          Hello! I can recommend listings, compare locations, or help you find the perfect stay. What are you looking for?
+        </div>
+      </div>
+    </div>
+    <div class="card-footer p-3 bg-white border-top">
+      <div class="input-group">
+        <input type="text" id="global-chat-input" class="form-control rounded-pill px-3 bg-light border-0 shadow-sm" placeholder="Ask for recommendations...">
+        <button id="global-chat-send" class="btn btn-danger rounded-circle ms-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; min-width: 38px; background-color: #ff385c; border: none;"><i class="fa-solid fa-paper-plane fa-xs text-white"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const globalToggle = document.getElementById('global-chat-toggle');
+  const globalWindow = document.getElementById('global-chat-window');
+  const globalClose = document.getElementById('global-chat-close');
+  const globalInput = document.getElementById('global-chat-input');
+  const globalSend = document.getElementById('global-chat-send');
+  const globalHistory = document.getElementById('global-chat-history');
+
+  if (globalToggle && globalWindow) {
+    globalToggle.addEventListener('click', () => globalWindow.classList.toggle('d-none'));
+    globalClose.addEventListener('click', () => globalWindow.classList.add('d-none'));
+
+    globalSend.addEventListener('click', sendGlobalMessage);
+    globalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendGlobalMessage(); });
+  }
+
+  async function sendGlobalMessage() {
+    const text = globalInput.value.trim();
+    if (!text) return;
+
+    globalHistory.innerHTML += `<div class="mb-3"><div class="chat-bubble-user shadow-sm small">${escapeHtml(text)}</div></div>`;
+    globalInput.value = '';
+    globalHistory.scrollTop = globalHistory.scrollHeight;
+
+    const loadingId = Date.now();
+    globalHistory.innerHTML += `<div id="msg-${loadingId}" class="mb-3"><div class="chat-bubble-ai shadow-sm small text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Searching properties...</div></div>`;
+    globalHistory.scrollTop = globalHistory.scrollHeight;
+
+    try {
+      const response = await fetch('/ask-global', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      const data = await response.json();
+      
+      const replyText = data.reply || data.error || "No response received.";
+      document.getElementById(`msg-${loadingId}`).innerHTML = `<div class="chat-bubble-ai shadow-sm small">${escapeHtml(replyText)}</div>`;
+    } catch (err) {
+      document.getElementById(`msg-${loadingId}`).innerHTML = `<div class="chat-bubble-ai shadow-sm small text-danger">Connection lost. Please try again.</div>`;
+    }
+    globalHistory.scrollTop = globalHistory.scrollHeight;
+  }
+
+  function escapeHtml(string) {
+    return String(string)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+</script>
