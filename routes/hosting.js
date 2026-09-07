@@ -1,9 +1,16 @@
+// routes/hosting.js
 const express = require("express");
 const router = express.Router();
-const hostingController = require("../controllers/hosting.js");
-const { isLoggedIn } = require("../middleware.js");
-const wrapAsync = require("../utils/wrapAsync.js");
+const Listing = require("../models/listing");
+const { isLoggedIn } = require("../middleware");
 
-router.get("/hosting/reservations", isLoggedIn, wrapAsync(hostingController.getHostingReservations));
+router.get("/", isLoggedIn, async (req, res) => {
+  try {
+    const listings = await Listing.find({ owner: req.user._id }).lean();
+    return res.json(listings);
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to fetch hosted properties." });
+  }
+});
 
 module.exports = router;
