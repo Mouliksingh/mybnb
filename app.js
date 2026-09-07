@@ -10,7 +10,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
-const methodOverride = require("method-override");
+const methodOverride = methodOverride = require("method-override");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const passport = require("passport");
@@ -123,6 +123,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
+// API Routes
 app.use("/api/listings", listingRouter);
 app.use("/api/listings/:id/reviews", reviewRouter);
 app.use("/api/bookings", bookingRouter);
@@ -131,10 +132,20 @@ app.use("/api/concierge", conciergeRouter);
 app.use("/api/hosting", hostingRouter);
 app.use("/api/auth", userRouter);
 
-app.all("*", (req, res, next) => {
+// Catch-all for missing API endpoints to return JSON instead of HTML
+app.all("/api/*", (req, res, next) => {
   next(new ExpressError(404, "API Endpoint Not Found!"));
 });
 
+// Serve React Frontend static files
+app.use(express.static(path.join(__dirname, "client/dist")));
+
+// React Router SPA Fallback (serve index.html for all non-API routes)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "client/dist/index.html"));
+});
+
+// Global Error-handling middleware
 app.use((err, req, res, next) => {
   let { statusCode = 500, message = "Something went wrong!" } = err;
   res.status(statusCode).json({ error: message });
