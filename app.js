@@ -10,7 +10,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
-const methodOverride = methodOverride = require("method-override");
+const methodOverride = require("method-override");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const passport = require("passport");
