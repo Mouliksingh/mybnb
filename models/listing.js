@@ -1,6 +1,8 @@
+// models/listing.js
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review.js");
+const Message = require("./message.js");
 
 const listingSchema = new Schema({
   title: {
@@ -8,33 +10,23 @@ const listingSchema = new Schema({
     required: true,
   },
   description: String,
+  image: {
+    url: String,
+    filename: String,
+  },
   images: [
     {
-      url: {
-        type: String,
-        default: "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
-      },
+      url: String,
       filename: String,
     }
   ],
-  price: {
-    type: Number,
-    default: 0
-  },
+  price: Number,
   location: String,
   country: String,
-  geometry: {
-    type: {
-      type: String,
-      enum: ["Point"],
-      required: true,
-      default: "Point"
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
-      default: [78.9629, 20.5937]
-    }
+  category: {
+    type: String,
+    enum: ["Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic"],
+    default: "Trending"
   },
   reviews: [
     {
@@ -46,19 +38,29 @@ const listingSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-  category: {
-    type: String,
-    enum: ["Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic"],
-    default: "Trending",
+  geometry: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: false
+    },
+    coordinates: {
+      type: [Number],
+      required: false
+    }
   },
+  embedding: {
+    type: [Number],
+    required: false
+  }
 });
-
-listingSchema.index({ geometry: "2dsphere" });
 
 listingSchema.post("findOneAndDelete", async (listing) => {
   if (listing) {
     await Review.deleteMany({ _id: { $in: listing.reviews } });
+    await Message.deleteMany({ listing: listing._id });
   }
 });
 
-module.exports = mongoose.model("Listing", listingSchema);
+const Listing = mongoose.model("Listing", listingSchema);
+module.exports = Listing;

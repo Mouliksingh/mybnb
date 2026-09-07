@@ -1,3 +1,4 @@
+// controllers/listings.js
 const Listing = require("../models/listing");
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 const mapToken = process.env.MAP_TOKEN;
@@ -10,29 +11,20 @@ module.exports.index = async (req, res) => {
 
     if (q && q.trim() !== "") {
       filter.$or = [
-        { title: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
-        { location: { $regex: q, $options: "i" } }
+        { title: { $regex: q.trim(), $options: "i" } },
+        { description: { $regex: q.trim(), $options: "i" } },
+        { location: { $regex: q.trim(), $options: "i" } }
       ];
     } else if (category && category.trim() !== "") {
       filter.category = category.trim();
     }
 
-    const allListings = await Listing.find(filter);
-    res.render("listings/index.ejs", {
-      allListings,
-      searchQuery: q || "",
-      selectedCategory: category || ""
-    });
+    const allListings = await Listing.find(filter).lean();
+    return res.json(allListings);
   } catch (err) {
-    console.error("Error in index route:", err);
-    req.flash("error", "Unable to load listings.");
-    res.redirect("/listings");
+    console.error("Error fetching listings JSON:", err);
+    return res.status(500).json({ error: "Unable to retrieve listings." });
   }
-};
-
-module.exports.renderNewForm = (req, res) => {
-  res.render("listings/new.ejs");
 };
 
 module.exports.showListing = async (req, res) => {
@@ -43,17 +35,16 @@ module.exports.showListing = async (req, res) => {
         path: "reviews",
         populate: { path: "author" },
       })
-      .populate("owner");
+      .populate("owner")
+      .lean();
 
     if (!listing) {
-      req.flash("error", "Listing you requested for does not exist!");
-      return res.redirect("/listings");
+      return res.status(404).json({ error: "Listing does not exist." });
     }
-    res.render("listings/show.ejs", { listing });
+    return res.json(listing);
   } catch (err) {
-    console.error("Error in showListing:", err);
-    req.flash("error", "Listing not found.");
-    res.redirect("/listings");
+    console.error("Error fetching listing details:", err);
+    return res.status(500).json({ error: "Listing lookup failed." });
   }
 };
 
@@ -71,55 +62,37 @@ module.exports.createListing = async (req, res) => {
     newListing.image = imagesArray.length > 0 ? imagesArray[0] : { url: "", filename: "" };
     newListing.images = imagesArray;
 
-    if (req.body.listing && req.body.listing.location && geocodingClient) {
+    if (newListing.location && geocodingClient) {
       try {
         let response = await geocodingClient
           .forwardGeocode({
-            query: req.body.listing.location,
+            query: newListing.location,
             limit: 1,
+            mode: 'mapbox.places',
+            countries: ['in'],
+            autocomplete: false
           })
           .send();
         if (response && response.body && response.body.features.length > 0) {
           newListing.geometry = response.body.features[0].geometry;
         }
       } catch (geoErr) {
-        console.error("Geocoding failed (non-fatal):", geoErr.message);
+        console.error("Geocoding non-fatal error:", geoErr.message);
       }
     }
 
     await newListing.save();
-    req.flash("success", "New Listing Created!");
-    res.redirect("/listings");
+    return res.status(201).json({ message: "Listing created successfully", listing: newListing });
   } catch (err) {
-    console.error("CRITICAL CREATE LISTING ERROR:", err);
-    req.flash("error", "Failed to create listing. Please check all fields.");
-    res.redirect("/listings/new");
-  }
-};
-
-module.exports.renderEditForm = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const listing = await Listing.findById(id);
-    if (!listing) {
-      req.flash("error", "Listing you requested for does not exist!");
-      return res.redirect("/listings");
-    }
-    let originalImageUrl = listing.image && listing.image.url ? listing.image.url : "";
-    if (originalImageUrl) {
-      originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
-    }
-    res.render("listings/edit.ejs", { listing, originalImageUrl });
-  } catch (err) {
-    console.error("Error in renderEditForm:", err);
-    res.redirect("/listings");
+    console.error("Listing creation error:", err);
+    return res.status(400).json({ error: "Failed to create listing." });
   }
 };
 
 module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
-    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
 
     let imagesArray = [];
     if (req.files && req.files.length > 0) {
@@ -134,12 +107,10 @@ module.exports.updateListing = async (req, res) => {
       await listing.save();
     }
 
-    req.flash("success", "Listing Updated!");
-    res.redirect(`/listings/${id}`);
+    return res.json({ message: "Listing updated successfully", listing });
   } catch (err) {
-    console.error("Error updating listing:", err);
-    req.flash("error", "Failed to update listing.");
-    res.redirect(`/listings/${req.params.id}/edit`);
+    console.error("Listing update error:", err);
+    return res.status(400).json({ error: "Failed to update listing." });
   }
 };
 
@@ -147,10 +118,9 @@ module.exports.destroyListing = async (req, res) => {
   try {
     const { id } = req.params;
     await Listing.findByIdAndDelete(id);
-    req.flash("success", "Listing Deleted!");
-    res.redirect("/listings");
+    return res.json({ message: "Listing deleted successfully" });
   } catch (err) {
-    console.error("Error deleting listing:", err);
-    res.redirect("/listings");
+    console.error("Listing deletion error:", err);
+    return res.status(500).json({ error: "Failed to delete listing." });
   }
 };
