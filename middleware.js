@@ -1,53 +1,36 @@
+// middleware.js
 const Listing = require("./models/listing");
 const Review = require("./models/review");
-const ExpressError = require("./utils/ExpressError.js");
-const { listingSchema, reviewSchema } = require("./schema.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
-    req.session.redirectUrl = req.originalUrl;
-    req.flash("error", "You must be logged in to perform this action!");
-    return res.redirect("/login");
-  }
-  next();
-};
-
-module.exports.saveRedirectUrl = (req, res, next) => {
-  if (req.session.redirectUrl) {
-    res.locals.redirectUrl = req.session.redirectUrl;
+    return res.status(401).json({ error: "You must be logged in to do that." });
   }
   next();
 };
 
 module.exports.isOwner = async (req, res, next) => {
-  let { id } = req.params;
-  let listing = await Listing.findById(id);
-  if (!listing.owner.equals(res.locals.currUser._id)) {
-    req.flash("error", "You are not the owner of this listing");
-    return res.redirect(`/listings/${id}`);
-  }
-  next();
-};
-
-module.exports.validateListing = (req, res, next) => {
-  if (req.body.listing && typeof req.body.listing.image === 'object') {
-    delete req.body.listing.image;
-  }
-  let { error } = listingSchema.validate(req.body);
-  if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
-  } else {
+  try {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing || !listing.owner.equals(req.user._id)) {
+      return res.status(403).json({ error: "You are not authorized to perform this action." });
+    }
     next();
+  } catch (err) {
+    return res.status(500).json({ error: "Authorization check failed." });
   }
 };
 
-module.exports.validateReview = (req, res, next) => {
-  let { error } = reviewSchema.validate(req.body);
-  if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
-  } else {
+module.exports.isReviewAuthor = async (req, res, next) => {
+  try {
+    const { reviewId } = req.params;
+    const review = await Review.findById(reviewId);
+    if (!review || !review.author.equals(req.user._id)) {
+      return res.status(403).json({ error: "You are not authorized to perform this action." });
+    }
     next();
+  } catch (err) {
+    return res.status(500).json({ error: "Review authorization check failed." });
   }
 };
